@@ -1,5 +1,4 @@
-/* ─── src/components/Waveform.tsx ─────────────────────────────── */
-/* Live waveform during recording, static waveform after stop */
+// Live waveform during recording, static waveform after stop 
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -14,7 +13,6 @@ export default function Waveform({ blob, isRecording }: Props) {
   const wsRef        = useRef<WaveSurfer>();
   const recRef       = useRef<ReturnType<typeof RecordPlugin.create>>();
 
-  /* 1) Initialize WaveSurfer and register Record plugin */
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -27,7 +25,6 @@ export default function Waveform({ blob, isRecording }: Props) {
       height: 80,
     });
 
-    // register the Record (mic) plugin and keep its instance
     recRef.current = wsRef.current.registerPlugin(
       RecordPlugin.create({
         // plugin options go here if you need them
@@ -39,14 +36,12 @@ export default function Waveform({ blob, isRecording }: Props) {
     };
   }, []);
 
-  /* 2) Kick off / tear down live mic capture */
   useEffect(() => {
     if (!recRef.current) return;
     if (isRecording)   recRef.current.startRecording();
     else               recRef.current.stopRecording();
   }, [isRecording]);
 
-  /* 3) Once we have the blob, draw the static waveform */
   useEffect(() => {
     if (blob && wsRef.current) {
       wsRef.current.loadBlob(blob);

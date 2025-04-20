@@ -1,4 +1,3 @@
-/* src/attempts/store.ts */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -24,7 +23,6 @@ export const useAttempts = create<State>()(
     {
       name: "pronunciation-history", // localStorage key
       partialize: (state) => ({
-        // ⬇︎ serialize everything *except* the Blob (can’t store that)
         attempts: state.attempts.map(({ blob, ...rest }) => rest),
       }),
     }
