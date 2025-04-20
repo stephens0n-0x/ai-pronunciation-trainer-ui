@@ -1,7 +1,8 @@
-/* Tailwind layers – these MUST come first */
+/* Tailwind layers – must come first */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 /* Design tokens */
 :root {
@@ -9,7 +10,6 @@
   --foreground: #171717;
 }
 
-/* Dark‑mode swap */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

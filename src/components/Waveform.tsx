@@ -1,22 +1,24 @@
+/* ─── src/components/Waveform.tsx ─────────────────────────────── */
+/* Live waveform during recording, static waveform after stop */
 "use client";
 
 import { useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
+// <-- import from the plugins folder (no /dist path)
+import RecordPlugin from "wavesurfer.js/plugins/record";
 
-type Props = {
-  audioBlob: Blob | null;
-  isRecording: boolean;
-};
+type Props = { blob: Blob | null; isRecording: boolean };
 
-export default function Waveform({ audioBlob, isRecording }: Props) {
+export default function Waveform({ blob, isRecording }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const ws = useRef<WaveSurfer>();
+  const wsRef        = useRef<WaveSurfer>();
+  const recRef       = useRef<ReturnType<typeof RecordPlugin.create>>();
 
-  // init on mount
+  /* 1) Initialize WaveSurfer and register Record plugin */
   useEffect(() => {
     if (!containerRef.current) return;
 
-    ws.current = WaveSurfer.create({
+    wsRef.current = WaveSurfer.create({
       container: containerRef.current,
       waveColor: "#cbd5e1",
       progressColor: "#3b82f6",
@@ -25,23 +27,31 @@ export default function Waveform({ audioBlob, isRecording }: Props) {
       height: 80,
     });
 
-    return () => ws.current?.destroy();
+    // register the Record (mic) plugin and keep its instance
+    recRef.current = wsRef.current.registerPlugin(
+      RecordPlugin.create({
+        // plugin options go here if you need them
+      })
+    );
+
+    return () => {
+      wsRef.current?.destroy();
+    };
   }, []);
 
-  // load audio when we stop recording
+  /* 2) Kick off / tear down live mic capture */
   useEffect(() => {
-    if (audioBlob && ws.current) {
-      ws.current.loadBlob(audioBlob);
-    }
-  }, [audioBlob]);
-
-  // simple glow while recording
-  useEffect(() => {
-    if (!ws.current) return;
-    ws.current.setOptions({
-      progressColor: isRecording ? "#ef4444" : "#3b82f6",
-    });
+    if (!recRef.current) return;
+    if (isRecording)   recRef.current.startRecording();
+    else               recRef.current.stopRecording();
   }, [isRecording]);
+
+  /* 3) Once we have the blob, draw the static waveform */
+  useEffect(() => {
+    if (blob && wsRef.current) {
+      wsRef.current.loadBlob(blob);
+    }
+  }, [blob]);
 
   return <div ref={containerRef} className="w-full" />;
 }
